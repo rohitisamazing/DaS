@@ -1,0 +1,22 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Read dataset
+df = pd.read_csv("mtcars.csv")
+
+# Group mpg values based on cylinder count
+cyl_groups = df.groupby('cyl')['mpg'].apply(list)
+
+# Create boxplot
+plt.figure(figsize=(8,5))
+plt.boxplot(cyl_groups, patch_artist=True)
+
+# Set x-axis labels as cyl categories
+plt.xticks(range(1, len(cyl_groups)+1), cyl_groups.index)
+
+plt.title("MPG vs Cylinder Count", fontsize=14)
+plt.xlabel("Number of Cylinders", fontsize=12)
+plt.ylabel("Miles Per Gallon (mpg)", fontsize=12)
+plt.grid(alpha=0.3)
+
+plt.show()
