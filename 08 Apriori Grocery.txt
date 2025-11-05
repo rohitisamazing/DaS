@@ -1,0 +1,55 @@
+%pip install mlxtend
+
+
+import pandas as pd
+from mlxtend.frequent_patterns import apriori, association_rules
+
+# -------------------------
+# Grocery Dataset
+# -------------------------
+transactions = [
+    ["Bread", "Milk"],
+    ["Bread", "Diaper", "Beer", "Eggs"],
+    ["Milk", "Diaper", "Beer", "Cola"],
+    ["Bread", "Milk", "Diaper", "Beer"],
+    ["Bread", "Milk", "Diaper", "Cola"],
+]
+
+# -------------------------
+# One-hot encode
+# -------------------------
+all_items = sorted({item for t in transactions for item in t})
+
+data = []
+for t in transactions:
+    row = {item: (item in t) for item in all_items}
+    data.append(row)
+
+df = pd.DataFrame(data)
+
+# -------------------------
+# Apriori
+# -------------------------
+frequent = apriori(df, min_support=0.001, use_colnames=True)
+
+# -------------------------
+# Association Rules
+# -------------------------
+rules = association_rules(frequent, metric="confidence", min_threshold=0.8)
+
+# Extract only relevant columns
+rules = rules[["antecedents", "consequents", "support", "confidence"]]
+
+# Sort by confidence (descending)
+rules_sorted = rules.sort_values(by="confidence", ascending=False)
+
+# Top 5 rules
+top5 = rules_sorted.head(5)
+
+print("\nTop 5 Association Rules (sorted by confidence):")
+print(top5)
+
+# Highlight strong rules
+print("\nStrong Rules (confidence ≥ 0.8):")
+strong_rules = top5[top5["confidence"] >= 0.8]
+print(strong_rules)

@@ -1,0 +1,20 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Read CSV file
+df = pd.read_csv("moviesData.csv")
+
+# Select first 10 rows
+df_first10 = df.head(10)
+
+# Plot bar chart
+plt.figure()
+plt.bar(df_first10["movie_title"], df_first10["critics_score"])
+plt.xticks(rotation=45)
+plt.title("Critics Score for First 10 Movies")
+plt.ylabel("Critics Score")
+plt.xlabel("Movie Title")
+
+# Save plot
+plt.savefig("critics_score_plot.png")
+plt.show()

@@ -1,0 +1,60 @@
+%pip install mlxtend
+
+# Install required packages if not present
+# pip install mlxtend pandas
+
+import pandas as pd
+from mlxtend.frequent_patterns import fpgrowth, association_rules
+
+# ----------------------------------------------------------
+# 1) Load dataset
+# ----------------------------------------------------------
+# Example retail/market basket dataset format:
+# Each row represents a transaction
+# Columns represent products (1 = purchased, 0 = not purchased)
+
+data = {
+    'Milk':   [1, 1, 0, 1, 0],
+    'Bread':  [1, 0, 1, 1, 1],
+    'Butter': [0, 1, 1, 1, 0],
+    'Eggs':   [1, 1, 0, 0, 0],
+    'Cheese': [0, 1, 1, 0, 1]
+}
+
+df = pd.DataFrame(data)
+
+# ✅ Convert 0/1 to boolean True/False
+df_bool = df.astype(bool)
+
+
+print("\n--- Dataset ---")
+print(df)
+
+# ----------------------------------------------------------
+# 2) FP-Growth to generate frequent itemsets
+# ----------------------------------------------------------
+min_support = 0.2     # Example threshold
+
+frequent_items = fpgrowth(df_bool, min_support=min_support, use_colnames=True)
+
+print("\n--- Frequent Itemsets ---")
+print(frequent_items)
+
+# ----------------------------------------------------------
+# 3) Generate association rules
+# ----------------------------------------------------------
+rules = association_rules(frequent_items, metric="confidence", min_threshold=0.5)
+
+# Sort by confidence (descending)
+rules = rules.sort_values(by="confidence", ascending=False)
+
+print("\n--- Association Rules ---")
+print(rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']])
+
+# ----------------------------------------------------------
+# 4) Top 5 Rules
+# ----------------------------------------------------------
+top5 = rules.head(5)
+
+print("\n--- TOP 5 Rules (sorted by confidence) ---")
+print(top5[['antecedents', 'consequents', 'support', 'confidence', 'lift']])

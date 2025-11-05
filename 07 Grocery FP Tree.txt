@@ -1,0 +1,104 @@
+%pip install mlxtend
+
+
+from collections import defaultdict
+import networkx as nx
+import matplotlib.pyplot as plt
+import pandas as pd
+from mlxtend.frequent_patterns import fpgrowth, association_rules
+
+# -------------------------
+# Grocery Dataset
+# -------------------------
+transactions = [
+    ["Bread", "Milk"],
+    ["Bread", "Diaper", "Beer", "Eggs"],
+    ["Milk", "Diaper", "Beer", "Cola"],
+    ["Bread", "Milk", "Diaper", "Beer"],
+    ["Bread", "Milk", "Diaper", "Cola"],
+]
+
+# -------------------------
+# FP-Tree Structure
+# -------------------------
+class FPTree:
+    def __init__(self):
+        self.root = {}
+        self.G = nx.DiGraph()
+
+    def insert(self, items):
+        current = self.root
+        for item in items:
+            if item not in current:
+                current[item] = {}
+            current = current[item]
+
+    def print_tree(self, node=None, indent=0):
+        if node is None:
+            node = self.root
+        for k, v in node.items():
+            print("  " * indent + str(k))
+            self.print_tree(v, indent + 1)
+
+    def build_graph(self, node=None, parent=None):
+        if node is None:
+            node = self.root
+        for k, v in node.items():
+            if parent:
+                self.G.add_edge(parent, k)
+            self.build_graph(v, k)
+
+    def plot(self):
+        self.build_graph()
+        pos = nx.spring_layout(self.G)
+        nx.draw(self.G, pos, with_labels=True, node_size=2000)
+        plt.show()
+
+
+# -------------------------
+# BUILD TREE + SHOW EVOLUTION
+# -------------------------
+tree = FPTree()
+
+print("\n=== FP-TREE EVOLUTION ===")
+
+for i, t in enumerate(transactions):
+    sorted_t = sorted(t)   # Typically sorted by frequency
+    tree.insert(sorted_t)
+    print(f"\nAfter Transaction {i+1}: {t}")
+    tree.print_tree()
+
+# -------------------------
+# Plot Final FP-Tree
+# -------------------------
+print("\nFinal FP-Tree:")
+tree.print_tree()
+
+print("\nDisplaying Tree Plot...")
+tree.plot()
+
+
+# -------------------------
+# FP-Growth (To Calculate Support & Confidence)
+# -------------------------
+
+# Prepare one-hot encoding
+all_items = sorted({item for t in transactions for item in t})
+dataset = []
+for t in transactions:
+    row = {item: (item in t) for item in all_items}
+    dataset.append(row)
+
+df = pd.DataFrame(dataset)
+
+# FP-Growth
+frequent = fpgrowth(df, min_support=0.001, use_colnames=True)
+
+# Association rules with confidence only
+rules = association_rules(frequent, metric="confidence", min_threshold=0.0)
+
+# Keep only support + confidence
+rules_display = rules[["antecedents", "consequents", "support", "confidence"]]
+
+print("\n\nSupport & Confidence Table:")
+print(rules_display)

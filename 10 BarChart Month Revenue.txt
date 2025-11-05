@@ -1,0 +1,40 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Data
+months = ["Mar", "Apr", "May", "Jun", "Jul"]
+regions = ["East", "West", "North"]
+colors = ["green", "orange", "brown"]
+
+# Example Revenue data for each region per month
+# Each sublist = revenue for each region in that month
+# Format: [East, West, North] for each month
+revenue_data = [
+    [200, 150, 100],  # Mar
+    [220, 180, 130],  # Apr
+    [250, 160, 120],  # May
+    [270, 200, 150],  # Jun
+    [300, 220, 180]   # Jul
+]
+
+# Convert to numpy array for easier manipulation
+revenue = np.array(revenue_data)
+
+# Plot
+fig, ax = plt.subplots(figsize=(8,5))
+
+# Bottoms for stacking
+bottom = np.zeros(len(months))
+
+# Plot each region
+for i, region in enumerate(regions):
+    ax.bar(months, revenue[:, i], bottom=bottom, color=colors[i], label=region)
+    bottom += revenue[:, i]  # update bottom for next stack
+
+# Labels and legend
+ax.set_xlabel("Month")
+ax.set_ylabel("Revenue")
+ax.set_title("Monthly Revenue by Region (Stacked Bar Chart)")
+ax.legend(title="Region")
+
+plt.show()
